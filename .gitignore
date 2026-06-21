@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# env files
+.env
+.env.*
+**/.env
+**/.env.*
+
+# build folders
+dist/
+build/
+**/dist/
+**/build/
+
+# logs
+*.log
+
+# macOS
+.DS_Store
+
+# vscode
+.vscode/
+
+# uploads (if any)
+uploads/
