@@ -14,12 +14,15 @@ import orderRouter from "./Routes/orderRoutes.js";
 // ✅ Add this line
 
 const app = express();
-
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://sarkar-ecommerce.vercel.app",
+    "https://sarkar-ecommerce-4ao3mhngb-atharv-shindes-projects.vercel.app"
+  ],
   credentials: true,
 }));
-
 app.use(express.json());
 
 connectDB();
