@@ -5,19 +5,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import validator from "validator";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
 
 import verifyEmail from "../Verify/emailVerify.js";
-
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_EMAIL,
-    pass: process.env.BREVO_SMTP_KEY,
-  },
-});
 
 // ─────────────────────────────────────────────────────────────
 // Register
@@ -146,12 +135,24 @@ export const forgotPassword = async (req, res) => {
 
     const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    await transporter.sendMail({
-      from: `"Sarkar" <${process.env.BREVO_EMAIL}>`,
-      to: user.email,
-      subject: "Password Reset",
-      html: `<h2>Password Reset</h2><p>Click the link below to reset your password:</p><a href="${resetURL}">${resetURL}</a>`,
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+      },
+      body: JSON.stringify({
+        sender: { name: "Sarkar", email: process.env.BREVO_EMAIL },
+        to: [{ email: user.email }],
+        subject: "Password Reset",
+        htmlContent: `<h2>Password Reset</h2><p>Click the link below to reset your password:</p><a href="${resetURL}">${resetURL}</a>`,
+      }),
     });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.message || "Failed to send email");
+    }
 
     return res.status(200).json({ success: true, message: "Reset link sent to email" });
   } catch (error) {
