@@ -5,10 +5,19 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import validator from "validator";
 import crypto from "crypto";
+import nodemailer from "nodemailer";
 
 import verifyEmail from "../Verify/emailVerify.js";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_EMAIL,
+    pass: process.env.BREVO_SMTP_KEY,
+  },
+});
 
 // ─────────────────────────────────────────────────────────────
 // Register
@@ -137,8 +146,8 @@ export const forgotPassword = async (req, res) => {
 
     const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    await resend.emails.send({
-      from: "Sarkar <onboarding@resend.dev>",
+    await transporter.sendMail({
+      from: `"Sarkar" <${process.env.BREVO_EMAIL}>`,
       to: user.email,
       subject: "Password Reset",
       html: `<h2>Password Reset</h2><p>Click the link below to reset your password:</p><a href="${resetURL}">${resetURL}</a>`,
