@@ -1,29 +1,30 @@
 // Verify/emailVerify.js
 
-import nodemailer from "nodemailer";
-
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_EMAIL,
-    pass: process.env.BREVO_SMTP_KEY,
-  },
-});
-
 const verifyEmail = async (email, token) => {
   const verificationUrl = `${process.env.FRONTEND_URL}/verify-account/${token}`;
-  await transporter.sendMail({
-    from: `"Sarkar" <${process.env.BREVO_EMAIL}>`,
-    to: email,
-    subject: "Verify Your Account",
-    html: `
-      <h2>Welcome to Sarkar</h2>
-      <p>Please verify your account by clicking the link below:</p>
-      <a href="${verificationUrl}">Verify Account</a>
-    `,
+
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": process.env.BREVO_API_KEY,
+    },
+    body: JSON.stringify({
+      sender: { name: "Sarkar", email: process.env.BREVO_EMAIL },
+      to: [{ email }],
+      subject: "Verify Your Account",
+      htmlContent: `
+        <h2>Welcome to Sarkar</h2>
+        <p>Please verify your account by clicking the link below:</p>
+        <a href="${verificationUrl}">Verify Account</a>
+      `,
+    }),
   });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.message || "Failed to send verification email");
+  }
 };
 
 export default verifyEmail;
