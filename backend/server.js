@@ -9,11 +9,9 @@ import cartRouter from "./Routes/cartRoutes.js";
 import contactRouter from "./Routes/contactRoutes.js";
 import orderRouter from "./Routes/orderRoutes.js";
 
+const app = express();
 
-
-// ✅ Add this line
-
-const app = express();app.use(
+app.use(
   cors({
     origin: [
       "http://localhost:5173",
@@ -23,9 +21,8 @@ const app = express();app.use(
     credentials: true,
   })
 );
-app.use(express.json());
 
-connectDB();
+app.use(express.json());
 
 app.use("/api/user", userRouter);
 app.use("/api/products", productRouter);
@@ -37,9 +34,15 @@ app.get("/", (req, res) => {
   res.send("API Working");
 });
 
-// ✅ THIS WAS MISSING — server never started without it
 const PORT = process.env.PORT || 8000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err.message);
+    process.exit(1);
+  });
