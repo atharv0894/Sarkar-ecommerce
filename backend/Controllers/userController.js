@@ -5,8 +5,10 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import validator from "validator";
 import crypto from "crypto";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import verifyEmail from "../Verify/emailVerify.js";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ─────────────────────────────────────────────────────────────
 // Register
@@ -134,16 +136,14 @@ export const forgotPassword = async (req, res) => {
     await user.save();
 
     const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS },
-    });
-    await transporter.sendMail({
-      from: process.env.MAIL_USER,
+
+    await resend.emails.send({
+      from: "Sarkar <onboarding@resend.dev>",
       to: user.email,
       subject: "Password Reset",
       html: `<h2>Password Reset</h2><p>Click the link below to reset your password:</p><a href="${resetURL}">${resetURL}</a>`,
     });
+
     return res.status(200).json({ success: true, message: "Reset link sent to email" });
   } catch (error) {
     console.error("Mail Error:", error);
