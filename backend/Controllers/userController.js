@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import validator from "validator";
 import crypto from "crypto";
-import { Resend } from "resend";
+
 import verifyEmail from "../Verify/emailVerify.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
