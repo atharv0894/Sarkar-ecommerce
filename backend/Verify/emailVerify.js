@@ -1,34 +1,29 @@
-// Verify/emailVerify.js
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_EMAIL,
+    pass: process.env.BREVO_SMTP_KEY,
+  },
+});
 
 const verifyEmail = async (email, token) => {
-  const frontendUrl = process.env.FRONTEND_URL;
-  if (!frontendUrl) throw new Error("FRONTEND_URL is not defined in .env");
+  const verificationUrl =
+    `${process.env.FRONTEND_URL}/verify-account/${token}`;
 
-  const verificationLink = `${frontendUrl}/verify-email/${token}`;
-
-  await resend.emails.send({
-    from: "eKart <onboarding@resend.dev>",  // use this until you add a domain
+  await transporter.sendMail({
+    from: `"Sarkar" <${process.env.BREVO_EMAIL}>`,
     to: email,
-    subject: "Verify your Sarkar account",
+    subject: "Verify Your Account",
     html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;border:1px solid #e5e5e5;border-radius:12px;">
-        <h2 style="color:#2c2c2a;">Welcome to Sarkar 👋</h2>
-        <p style="color:#555;">Click the button below to verify your email address.</p>
-        <a href="${verificationLink}"
-          style="display:inline-block;margin-top:16px;padding:12px 28px;background:#2c2c2a;color:#fff;border-radius:999px;text-decoration:none;font-size:14px;">
-          Verify Email
-        </a>
-        <p style="margin-top:24px;font-size:12px;color:#aaa;">
-          This link expires in 24 hours. If you didn't create an account, ignore this email.
-        </p>
-      </div>
+      <h2>Welcome to Sarkar</h2>
+      <p>Please verify your account by clicking the link below:</p>
+      <a href="${verificationUrl}">Verify Account</a>
     `,
   });
-
-  console.log(`✅ Verification email sent to ${email}`);
 };
 
 export default verifyEmail;
